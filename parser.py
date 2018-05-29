@@ -1,5 +1,7 @@
 from bs4 import BeautifulSoup
 from datetime import datetime
+from selenium import webdriver
+from time import sleep
 import requests
 
 def read_block( soup ):
@@ -100,7 +102,6 @@ def fulltext_links( pubmed_id ):
     """
     Str → IO (Soup)
     Gets fulltext links from a pubmed id
-    no crawl delay included here. robots.text requests 5s.
     """
     url = "https://www.ncbi.nlm.nih.gov/pubmed/{}".format(pubmed_id)
     html = requests.get(url).text
@@ -110,18 +111,21 @@ def fulltext_links( pubmed_id ):
     anchors = div.find_all("a")
     return [ a.attrs["href"] for a in anchors ]
 
-def get_fulltext( pubmed_id ):
+def get_fulltext( pubmed_id , driver ):
     """
     Str → IO Dict(a)
     Gets processed fulltext of article from pubmed id
     Uses any known parser
     """
     links = fulltext_links( pubmed_id )
+    sleep(5) # As requested by robots.txt
     # probably over-engineering. currently one known parser.
     for url_stem in known_parsers:
         for url in links:
             if url_stem in url:
-                html = requests.get( url ).text
+                driver.get(url)
+                sleep(5)
+                html = driver.page_source
                 soup = BeautifulSoup( html, "lxml" )
                 return known_parsers[url_stem](soup)
     return {"links": links}
@@ -131,6 +135,8 @@ def parse_ncbi_fulltext( soup ):
     Soup → Dict
     """
     article_soup = soup.find(class_="jig-ncbiinpagenav")
+    if not article_soup:
+        return {}
     sections = article_soup.find_all(class_="tsec")
     abstract = parse_ncbi_abstract( sections.pop(0) )
     text = [p.text for sec in sections for p in sec.find_all("p")]
@@ -148,7 +154,7 @@ def parse_ncbi_abstract( soup ):
         keywords = keywords.text
         keywords = keywords.split(", ")
         for i, kw in enumerate(keywords):
-            if "(" in kw:
+            if " (" in kw:
                 compound_kw = kw.split(" (")
                 keywords[i] = compound_kw[0]
                 abbrev = compound_kw[1].replace(")","")
