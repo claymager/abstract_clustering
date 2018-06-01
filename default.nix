@@ -1,10 +1,13 @@
 with import <nixpkgs> {};
 let dsPythonPackages = pythonPackages: with pythonPackages; [
   pandas
+  bokeh
+  gensim
   flask
   selenium
   scikitlearn
   nltk
+  pip
   jupyter
   seaborn
   pymongo
