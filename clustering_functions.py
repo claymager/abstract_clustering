@@ -4,6 +4,10 @@ from sklearn.cluster import DBSCAN
 from sklearn.metrics import silhouette_score
 
 def view_dbscan(topic_data, max_epsilon, min_epsilon=0.001, stepsize=1/1000):
+    """
+    Runs DBSCAN on range of nieighborhood sizes
+    Returns dict for plotting
+    """
     epsilons = []
     scores = []
     len_mask = []
@@ -34,6 +38,9 @@ def view_dbscan(topic_data, max_epsilon, min_epsilon=0.001, stepsize=1/1000):
     return {"epsilons":epsilons, "scores":scores, "len_mask":len_mask, "k_clusters":k_clusters, "sizes":sizes}
 
 def plot_exploration(epsilons, scores, len_mask, k_clusters, sizes, color="#680888", title=None):
+    """
+    Plots various metrics from dbscan exploration
+    """
     plt.style.use("fivethirtyeight")
     plt.figure(dpi=150, figsize=(16,14))
     plt.suptitle(title, size=40)
@@ -63,6 +70,9 @@ def fillplot(xs, ys, color, linewidth):
     plt.fill( xs+[ xs[-1],xs[0] ], ys+[base,base], color=color, alpha=0.3 )
 
 def plot_tsne(X_ne, labels, title="TSNE/DBSCAN"):
+    """
+    Plots X_ne, with colors y labels
+    """
     plt.style.use("fivethirtyeight")
     plt.figure(dpi=150, figsize=(6,5))
     plt.suptitle(title, size="20")
@@ -75,6 +85,9 @@ def plot_tsne(X_ne, labels, title="TSNE/DBSCAN"):
     plt.colorbar();
 
 def get_clusters(labels, ids):
+    """
+    Returns dict mapping labels to lists of document ids
+    """
     clusters = defaultdict(list)
     for lbl in set(labels):
         for label, id_ in zip(labels, ids):
@@ -82,11 +95,10 @@ def get_clusters(labels, ids):
                 clusters[lbl].append(id_)
     return clusters
 
-def get_group_text(labels, group_id):
-    mask = labels == group_id
-    return [texts[i] for i, e in enumerate(mask) if e]
-
 def profile_labels(labels):
+    """
+    Prints basic cluster size information
+    """
     for label in set(labels):
         mask = labels == label
         print("Cluster {} has {} documents.".format(label, sum(mask)))

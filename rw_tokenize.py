@@ -10,23 +10,11 @@ def get_driver():
     collection = client.retraction_watch
     return collection.retracted
 
-def main():
-    retracted = get_driver()
-    abstract_exists = {"abstract":{"$exists":1}}
-    for doc in retracted.find(abstract_exists):
-        abstract = doc["abstract"]
-        tokens = tokenize_sci(abstract)
-
-amino_acids_long = ["alanine", "arginine", "asparagine", "aspartic acid",
-        "aspartate", "cysteine", "glutamine", "glutamic acid", "glutamate",
-        "histidine", "glycine", "isoleucine", "leucine", "lysine", "methionine",
-        "phenylalanine", "proline", "serine", "threonine", "tryptophan",
-        "tyrosine", "valine"]
-amino_acid_codes = ["ala", "arg", "asn", "asp", "cys", "gln", "glu", "gly",
-        "his", "ile", "leu", "lys", "met", "phe", "pro", "ser", "thr", "trp",
-        "tyr", "val"]
-
 def clean( text ):
+    """
+    Cleans text
+    All replacement words have prefix "rw" to identify from natural use
+    """
     text = text.lower()
     text = re.sub(r"\d\d?\.?\d*%", r"rwPERCENT", text)
     text = re.sub(r"p\s?<\s?0\.(\d*)", r"rwPLessThan\1", text)
